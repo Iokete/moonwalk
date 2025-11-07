@@ -150,7 +150,7 @@ Then the only thing we have to do now is change ``/bin/sh`` to ``/bin0sh`` and g
 ```console
 ❯ python3 exp.py
  $ id
-uid=1000(kali) gid=1000(kali) groups=1000(kali),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio) ...
+uid=1000(kali) gid=1000(kali) groups=1000(kali)
 ```
 
 ### Full Script
