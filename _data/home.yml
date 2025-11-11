@@ -13,6 +13,10 @@ project_entries:
     url: magic-scrolls-writeup
     desc: "Writeup for Magic Scrolls - HTB Hard Pwn Challenge"
     highlight: NEW
+  - title: "Arbitrary Write to RCE"
+    url: gestor-cuentas-writeup
+    desc: "TLS Storage dtor_list overwrite to achieve code execution"
+    highlight: NEW
 
 #old_project_entries:
 #  - title: titulo
